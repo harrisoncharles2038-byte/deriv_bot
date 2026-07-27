@@ -181,8 +181,7 @@ export function monteCarlo(opts: MonteCarloOptions): MonteCarloResult {
       const nextDigit = sampleFromDist(opts.digitMarkov.matrix[state], rand);
       state = nextDigit;
       // Rise/fall path independent of digit chain.
-      const pRise =
-        rfState == null ? 0.5 : opts.riseFallMarkov.matrix[rfState][1];
+      const pRise = rfState == null ? 0.5 : opts.riseFallMarkov.matrix[rfState][1];
       const isRise = rand() < pRise;
       rfState = isRise ? 1 : 0;
 
@@ -203,9 +202,19 @@ export function monteCarlo(opts: MonteCarloOptions): MonteCarloResult {
     runs,
     horizon,
     evenProb: evenCI,
-    oddProb: { p: 1 - evenCI.p, ciLow: 1 - evenCI.ciHigh, ciHigh: 1 - evenCI.ciLow, uncertainty: evenCI.uncertainty },
+    oddProb: {
+      p: 1 - evenCI.p,
+      ciLow: 1 - evenCI.ciHigh,
+      ciHigh: 1 - evenCI.ciLow,
+      uncertainty: evenCI.uncertainty,
+    },
     riseProb: riseCI,
-    fallProb: { p: 1 - riseCI.p, ciLow: 1 - riseCI.ciHigh, ciHigh: 1 - riseCI.ciLow, uncertainty: riseCI.uncertainty },
+    fallProb: {
+      p: 1 - riseCI.p,
+      ciLow: 1 - riseCI.ciHigh,
+      ciHigh: 1 - riseCI.ciLow,
+      uncertainty: riseCI.uncertainty,
+    },
     matchProb: wilsonCI(match, total),
     overProb: wilsonCI(over, total),
     underProb: wilsonCI(under, total),
@@ -248,7 +257,11 @@ export interface PredictionLayer {
   sampleSize: number;
 }
 
-function combine(bayesMean: number, markovProb: number, mcCI: ProbWithCI): {
+function combine(
+  bayesMean: number,
+  markovProb: number,
+  mcCI: ProbWithCI,
+): {
   combinedProb: number;
   combinedCI: [number, number];
   uncertainty: number;
@@ -277,10 +290,7 @@ export function buildPredictionLayer(inputs: PredictionInputs): PredictionLayer 
   const digits = lastDigits(ticks);
   const evenCount = digits.filter((d) => d % 2 === 0).length;
   const bayesEven = betaPosterior(evenCount, digits.length);
-  const markovEven = digitMarkov.nextDist.reduce(
-    (s, p, d) => (d % 2 === 0 ? s + p : s),
-    0,
-  );
+  const markovEven = digitMarkov.nextDist.reduce((s, p, d) => (d % 2 === 0 ? s + p : s), 0);
   const evenCombined = combine(bayesEven.mean, markovEven, monteCarloResult.evenProb);
   const evenPrediction: Prediction = {
     label: "Next tick Even vs Odd",
@@ -289,7 +299,8 @@ export function buildPredictionLayer(inputs: PredictionInputs): PredictionLayer 
     bayes: bayesEven,
     markovProb: markovEven,
     monteCarlo: monteCarloResult.evenProb,
-    combinedProb: evenCombined.combinedProb >= 0.5 ? evenCombined.combinedProb : 1 - evenCombined.combinedProb,
+    combinedProb:
+      evenCombined.combinedProb >= 0.5 ? evenCombined.combinedProb : 1 - evenCombined.combinedProb,
     combinedCI:
       evenCombined.combinedProb >= 0.5
         ? evenCombined.combinedCI
@@ -311,7 +322,8 @@ export function buildPredictionLayer(inputs: PredictionInputs): PredictionLayer 
     bayes: bayesRise,
     markovProb: markovRise,
     monteCarlo: monteCarloResult.riseProb,
-    combinedProb: riseCombined.combinedProb >= 0.5 ? riseCombined.combinedProb : 1 - riseCombined.combinedProb,
+    combinedProb:
+      riseCombined.combinedProb >= 0.5 ? riseCombined.combinedProb : 1 - riseCombined.combinedProb,
     combinedCI:
       riseCombined.combinedProb >= 0.5
         ? riseCombined.combinedCI
@@ -334,7 +346,10 @@ export function buildPredictionLayer(inputs: PredictionInputs): PredictionLayer 
     markovProb: markovMatch,
     monteCarlo: mcMatch,
     combinedProb: matchCombinedProb >= 0.1 ? matchCombinedProb : 1 - matchCombinedProb,
-    combinedCI: matchCombinedProb >= 0.1 ? [mcMatch.ciLow, mcMatch.ciHigh] : [1 - mcMatch.ciHigh, 1 - mcMatch.ciLow],
+    combinedCI:
+      matchCombinedProb >= 0.1
+        ? [mcMatch.ciLow, mcMatch.ciHigh]
+        : [1 - mcMatch.ciHigh, 1 - mcMatch.ciLow],
     uncertainty: mcMatch.uncertainty,
     edge: Math.abs(matchCombinedProb - 0.1),
   };
@@ -345,7 +360,8 @@ export function buildPredictionLayer(inputs: PredictionInputs): PredictionLayer 
   const bayesOver = betaPosterior(overCount, overCount + underCount);
   const markovOver = digitMarkov.nextDist.reduce((s, p, d) => (d > barrier ? s + p : s), 0);
   const markovUnder = digitMarkov.nextDist.reduce((s, p, d) => (d < barrier ? s + p : s), 0);
-  const markovOverNorm = markovOver + markovUnder > 0 ? markovOver / (markovOver + markovUnder) : 0.5;
+  const markovOverNorm =
+    markovOver + markovUnder > 0 ? markovOver / (markovOver + markovUnder) : 0.5;
   const mcOverNorm =
     monteCarloResult.overProb.p + monteCarloResult.underProb.p > 0
       ? monteCarloResult.overProb.p / (monteCarloResult.overProb.p + monteCarloResult.underProb.p)
@@ -363,7 +379,8 @@ export function buildPredictionLayer(inputs: PredictionInputs): PredictionLayer 
     bayes: bayesOver,
     markovProb: markovOverNorm,
     monteCarlo: monteCarloResult.overProb,
-    combinedProb: ouCombined.combinedProb >= 0.5 ? ouCombined.combinedProb : 1 - ouCombined.combinedProb,
+    combinedProb:
+      ouCombined.combinedProb >= 0.5 ? ouCombined.combinedProb : 1 - ouCombined.combinedProb,
     combinedCI:
       ouCombined.combinedProb >= 0.5
         ? ouCombined.combinedCI

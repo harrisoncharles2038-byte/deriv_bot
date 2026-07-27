@@ -7,7 +7,8 @@ export function PredictionPanel({ layer }: { layer: PredictionLayer }) {
   if (layer.sampleSize < 20) {
     return (
       <div className="rounded-md border bg-muted/30 p-4 text-sm text-muted-foreground">
-        Collecting ticks… need at least 20 samples to produce stable Markov / Bayesian / Monte Carlo estimates.
+        Collecting ticks… need at least 20 samples to produce stable Markov / Bayesian / Monte Carlo
+        estimates.
       </div>
     );
   }
@@ -50,15 +51,25 @@ function PredictionCard({ p }: { p: Prediction }) {
         </div>
         <Progress value={p.combinedProb * 100} className="mt-1 h-2" />
         <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground tabular-nums">
-          <span>95% CI {pct(p.combinedCI[0])} – {pct(p.combinedCI[1])}</span>
+          <span>
+            95% CI {pct(p.combinedCI[0])} – {pct(p.combinedCI[1])}
+          </span>
           <span>± {pct(p.uncertainty / 2)}</span>
         </div>
       </div>
 
       <dl className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
-        <Stat label="Bayes" value={pct(p.bayes.mean)} sub={`n=${p.bayes.alpha + p.bayes.beta - 2}`} />
+        <Stat
+          label="Bayes"
+          value={pct(p.bayes.mean)}
+          sub={`n=${p.bayes.alpha + p.bayes.beta - 2}`}
+        />
         <Stat label="Markov" value={pct(p.markovProb)} sub="1-step" />
-        <Stat label="Monte Carlo" value={pct(p.monteCarlo.p)} sub={`±${pct(p.monteCarlo.uncertainty / 2)}`} />
+        <Stat
+          label="Monte Carlo"
+          value={pct(p.monteCarlo.p)}
+          sub={`±${pct(p.monteCarlo.uncertainty / 2)}`}
+        />
       </dl>
     </div>
   );

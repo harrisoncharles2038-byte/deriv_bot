@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Activity, Wifi, WifiOff, Download } from "lucide-react";
 import { DERIV_SYMBOLS, isOneSecondIndex } from "@/lib/deriv/symbols";
 import { useDerivTicks } from "@/hooks/useDerivTicks";
@@ -35,6 +36,8 @@ import { InsightsPanel } from "@/components/analyzer/InsightsPanel";
 import { SymbolScannerPanel } from "@/components/analyzer/SymbolScannerPanel";
 import { TradePickPanel } from "@/components/analyzer/TradePickPanel";
 import { DerivAccountPanel } from "@/components/analyzer/DerivAccountPanel";
+import { AutoBotPanel } from "@/components/analyzer/AutoBotPanel";
+import { TradeHistoryPanel } from "@/components/analyzer/TradeHistoryPanel";
 import { useDerivAccount } from "@/hooks/useDerivAccount";
 import { buildPredictionLayer } from "@/lib/deriv/prediction";
 import { cn } from "@/lib/utils";
@@ -67,9 +70,21 @@ function Index() {
   const [windowSize, setWindowSize] = useState<number>(100);
   const [targetDigit, setTargetDigit] = useState<number>(0);
   const [barrier, setBarrier] = useState<number>(5);
+  const [activeView, setActiveView] = useState("auto-bot");
 
   const { ticks, status } = useDerivTicks(symbol);
   const account = useDerivAccount();
+
+  // Scroll to the relevant content when active view changes
+  const contentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (["auto-bot", "history", "settings"].includes(activeView)) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      // Scroll the strategy panels into view so the user doesn't have to scroll past the global charts
+      contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [activeView]);
 
   const windowed = useMemo(() => takeWindow(ticks, windowSize), [ticks, windowSize]);
 
@@ -97,132 +112,123 @@ function Index() {
   const lastTick = ticks[ticks.length - 1];
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto w-full max-w-6xl space-y-4 px-4 py-6">
-        <header className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="flex items-center gap-2 text-xl font-bold sm:text-2xl">
-                <Activity className="h-5 w-5 text-primary" />
-                Deriv Synthetic Indices Analyzer
-              </h1>
-              <p className="text-xs text-muted-foreground sm:text-sm">
-                Live tick statistics for Even/Odd, Rise/Fall, Matches/Differs, and Over/Under.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <a
-                href="/api/export/zip"
-                download="project-export.zip"
-                className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Export ZIP
-              </a>
-              <StatusBadge status={status} />
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-3">
-            <Field label="Symbol">
-              <Select value={symbol} onValueChange={setSymbol}>
-                <SelectTrigger className="h-9 w-[220px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DERIV_SYMBOLS.map((s) => (
-                    <SelectItem key={s.code} value={s.code}>
-                      {s.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Badge variant="outline" className="mt-1.5 w-fit border-0 bg-muted text-[10px] text-muted-foreground">
-                {isOneSecondIndex(symbol) ? "1-second ticks" : "Standard ticks"}
-              </Badge>
-            </Field>
-
-            <Field label="Window">
-              <Select value={String(windowSize)} onValueChange={(v) => setWindowSize(Number(v))}>
-                <SelectTrigger className="h-9 w-[120px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {WINDOWS.map((w) => (
-                    <SelectItem key={w} value={String(w)}>
-                      Last {w}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <div className="ml-auto text-right">
-              <div className="text-xs text-muted-foreground">Latest quote</div>
-              <div className="font-mono text-lg font-semibold tabular-nums">
-                {lastTick ? lastTick.quoteStr : "—"}
+    <SidebarProvider>
+      <AppSidebar activeView={activeView} setActiveView={setActiveView} />
+      <SidebarInset>
+        <main className="min-h-screen bg-transparent text-foreground pb-12 selection:bg-primary/30">
+          <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pt-2 pb-8">
+            <header className="sticky top-0 z-40 -mx-4 px-4 py-3 mb-6 flex flex-wrap items-center justify-between gap-4 glass-header rounded-b-xl shadow-sm border-b border-white/10 backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <SidebarTrigger />
+                <div className="hidden sm:block">
+                  <h1 className="flex items-center gap-2 text-lg font-bold text-foreground/90">
+                    <Activity className="h-4 w-4 text-primary" />
+                    Analyzer
+                  </h1>
+                </div>
               </div>
+
+              <div className="flex flex-1 flex-wrap items-center justify-end gap-3 lg:gap-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground hidden lg:inline">Symbol</span>
+                  <Select value={symbol} onValueChange={setSymbol}>
+                    <SelectTrigger className="h-8 w-[160px] bg-background/50 border-white/10">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DERIV_SYMBOLS.map((s) => (
+                        <SelectItem key={s.code} value={s.code}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground hidden lg:inline">Window</span>
+                  <Select value={String(windowSize)} onValueChange={(v) => setWindowSize(Number(v))}>
+                    <SelectTrigger className="h-8 w-[100px] bg-background/50 border-white/10">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WINDOWS.map((w) => (
+                        <SelectItem key={w} value={String(w)}>
+                          Last {w}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="hidden md:flex flex-col items-end">
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Quote</span>
+                  <span className="font-mono text-sm font-bold text-primary drop-shadow-[0_0_8px_var(--color-primary)]">
+                    {lastTick ? lastTick.quoteStr : "—"}
+                  </span>
+                </div>
+                
+                <StatusBadge status={status} />
+              </div>
+            </header>
+
+            <div className={cn("animate-in fade-in zoom-in-95 duration-500", activeView === "settings" ? "block" : "hidden")}>
+              <DerivAccountPanel account={account} />
             </div>
-          </div>
-        </header>
 
-        <DerivAccountPanel account={account} />
+            <section className={cn("grid gap-6 lg:grid-cols-3", ["auto-bot", "history", "settings"].includes(activeView) ? "hidden" : "")}>
+              <Card className="lg:col-span-2 glass-panel hover:border-primary/40 transition-all duration-300">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Price (last 150 ticks)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PriceChart ticks={ticks} />
+                </CardContent>
+              </Card>
+              <Card className="glass-panel hover:border-primary/40 transition-all duration-300">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Overall signal</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <SignalCard signal={overall} />
+                </CardContent>
+              </Card>
+            </section>
 
-        <section className="grid gap-4 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Price (last 150 ticks)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PriceChart ticks={ticks} />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Overall signal</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SignalCard signal={overall} />
-            </CardContent>
-          </Card>
-        </section>
+            <section className={cn("grid gap-6 lg:grid-cols-2", ["auto-bot", "history", "settings"].includes(activeView) ? "hidden" : "")}>
+              <Card className="glass-panel hover:border-primary/40 transition-all duration-300">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Digit frequency (0–9)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DigitHistogram freq={freq} />
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Green = most frequent, red = least frequent in the selected window.
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="glass-panel hover:border-primary/40 transition-all duration-300">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Recent last-digits</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RecentDigits ticks={ticks} />
+                </CardContent>
+              </Card>
+            </section>
 
-        <section className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Digit frequency (0–9)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DigitHistogram freq={freq} />
-              <p className="mt-2 text-xs text-muted-foreground">
-                Green = most frequent, red = least frequent in the selected window.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Recent last-digits</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RecentDigits ticks={ticks} />
-            </CardContent>
-          </Card>
-        </section>
-
-        <Card>
-          <CardContent className="p-3 sm:p-4">
-            <Tabs defaultValue="insights">
-              <TabsList className="flex w-full flex-wrap justify-start">
-                <TabsTrigger value="insights">Insights</TabsTrigger>
-                <TabsTrigger value="predictions">Predictions</TabsTrigger>
-                <TabsTrigger value="scanner">Scanner</TabsTrigger>
-                <TabsTrigger value="even-odd">Even/Odd</TabsTrigger>
-                <TabsTrigger value="rise-fall">Rise/Fall</TabsTrigger>
-                <TabsTrigger value="matches-differs">Matches/Differs</TabsTrigger>
-                <TabsTrigger value="over-under">Over/Under</TabsTrigger>
-              </TabsList>
-              <TabsContent value="insights" className="mt-4">
-                <div className="space-y-4">
+            <Card 
+              ref={contentRef}
+              className={cn("glass-panel hover:border-primary/40 transition-all duration-500 overflow-hidden scroll-mt-28", activeView === "settings" ? "hidden" : "block")}
+            >
+              <CardContent className="p-3 sm:p-4">
+                <div className={cn("mt-2", activeView === "auto-bot" ? "block" : "hidden")}>
+                  <AutoBotPanel />
+                </div>
+                <div className={cn("mt-2", activeView === "history" ? "block" : "hidden")}>
+                  <TradeHistoryPanel />
+                </div>
+                <div className={cn("mt-2 space-y-4", activeView === "insights" ? "block" : "hidden")}>
                   <TradePickPanel
                     currentSymbol={symbol}
                     currentDigit={targetDigit}
@@ -240,39 +246,43 @@ function Index() {
                     onSelectDigit={setTargetDigit}
                   />
                 </div>
-              </TabsContent>
-              <TabsContent value="predictions" className="mt-4">
-                <PredictionPanel layer={prediction} />
-              </TabsContent>
-              <TabsContent value="scanner" className="mt-4">
-                <SymbolScannerPanel
-                  targetDigit={targetDigit}
-                  barrier={barrier}
-                  currentSymbol={symbol}
-                  onSelectSymbol={setSymbol}
-                />
-              </TabsContent>
-              <TabsContent value="even-odd" className="mt-4">
-                <EvenOddPanel r={evenOddR} />
-              </TabsContent>
-              <TabsContent value="rise-fall" className="mt-4">
-                <RiseFallPanel r={riseFallR} />
-              </TabsContent>
-              <TabsContent value="matches-differs" className="mt-4">
-                <MatchesDiffersPanel r={matchesR} digit={targetDigit} onDigitChange={setTargetDigit} />
-              </TabsContent>
-              <TabsContent value="over-under" className="mt-4">
-                <OverUnderPanel r={overUnderR} barrier={barrier} onBarrierChange={setBarrier} />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+                <div className={cn("mt-2", activeView === "predictions" ? "block" : "hidden")}>
+                  <PredictionPanel layer={prediction} />
+                </div>
+                <div className={cn("mt-2", activeView === "scanner" ? "block" : "hidden")}>
+                  <SymbolScannerPanel
+                    targetDigit={targetDigit}
+                    barrier={barrier}
+                    currentSymbol={symbol}
+                    onSelectSymbol={setSymbol}
+                  />
+                </div>
+                <div className={cn("mt-2", activeView === "even-odd" ? "block" : "hidden")}>
+                  <EvenOddPanel r={evenOddR} />
+                </div>
+                <div className={cn("mt-2", activeView === "rise-fall" ? "block" : "hidden")}>
+                  <RiseFallPanel r={riseFallR} />
+                </div>
+                <div className={cn("mt-2", activeView === "matches-differs" ? "block" : "hidden")}>
+                  <MatchesDiffersPanel
+                    r={matchesR}
+                    digit={targetDigit}
+                    onDigitChange={setTargetDigit}
+                  />
+                </div>
+                <div className={cn("mt-2", activeView === "over-under" ? "block" : "hidden")}>
+                  <OverUnderPanel r={overUnderR} barrier={barrier} onBarrierChange={setBarrier} />
+                </div>
+              </CardContent>
+            </Card>
 
-        <footer className="pt-4 text-center text-xs text-muted-foreground">
-          Data: Deriv public WebSocket API · Analysis only · Not affiliated with Deriv.com
-        </footer>
-      </div>
-    </main>
+            <footer className="pt-4 text-center text-xs text-muted-foreground">
+              Data: Deriv public WebSocket API · Analysis only · Not affiliated with Deriv.com
+            </footer>
+          </div>
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 

@@ -20,7 +20,9 @@ export function SignalCard({ signal }: { signal: OverallSignal }) {
   return (
     <div className="flex h-full flex-col gap-4">
       <div>
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">Recommended action</div>
+        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          Recommended action
+        </div>
         <div className="mt-2 flex items-center gap-3">
           <span className={cn("inline-flex rounded-md px-3 py-1.5 text-lg font-bold", actionColor)}>
             {signal.action}
@@ -42,7 +44,9 @@ export function SignalCard({ signal }: { signal: OverallSignal }) {
       <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm">
         {signal.best ? (
           <>
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">Strongest signal</div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">
+              Strongest signal
+            </div>
             <div className="mt-1 font-medium">{signal.best.kind}</div>
             <div className="text-muted-foreground">
               {signal.best.signal} · {signal.best.confidence}% confidence

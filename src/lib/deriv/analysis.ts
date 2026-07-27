@@ -238,7 +238,12 @@ export function overallSignal(parts: {
     { kind: "Even/Odd", signal: parts.evenOdd.signal, confidence: parts.evenOdd.confidence },
     {
       kind: "Rise/Fall",
-      signal: parts.riseFall.direction === "UP" ? "BUY RISE" : parts.riseFall.direction === "DOWN" ? "BUY FALL" : "NO TRADE",
+      signal:
+        parts.riseFall.direction === "UP"
+          ? "BUY RISE"
+          : parts.riseFall.direction === "DOWN"
+            ? "BUY FALL"
+            : "NO TRADE",
       confidence: parts.riseFall.confidence,
     },
     {

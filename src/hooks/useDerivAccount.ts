@@ -55,44 +55,49 @@ export function useDerivAccount() {
     }
   }, [settings]);
 
-  const connect = useCallback(async (rawToken: string, preferDemoOverride?: boolean) => {
-    const t = rawToken.trim();
-    if (!t) return;
-    setStatus("connecting");
-    setError(null);
-    try {
-      traderRef.current?.close();
-      const trader = new DerivTrader(t);
-      traderRef.current = trader;
-      const { accounts: acc } = await trader.authorize();
-      setAccounts(acc);
-      const preferDemo = preferDemoOverride ?? settings.preferDemo;
-      const demo = acc.find((a) => a.is_virtual === 1);
-      const real = acc.find((a) => a.is_virtual === 0);
-      const target = preferDemo ? demo ?? real : real ?? demo;
-      if (target) {
-        try {
-          await trader.switchAccount(target.loginid);
-        } catch {
-          // ignore — first authorize may already be on the right account
+  const connect = useCallback(
+    async (rawToken: string, preferDemoOverride?: boolean) => {
+      const t = rawToken.trim();
+      if (!t) return;
+      setStatus("connecting");
+      setError(null);
+      try {
+        traderRef.current?.close();
+        const trader = new DerivTrader(t);
+        traderRef.current = trader;
+        const { accounts: acc } = await trader.authorize();
+        setAccounts(acc);
+        const preferDemo = preferDemoOverride ?? settings.preferDemo;
+        const demo = acc.find((a) => a.is_virtual === 1);
+        const real = acc.find((a) => a.is_virtual === 0);
+        const target = preferDemo ? (demo ?? real) : (real ?? demo);
+        if (target) {
+          try {
+            await trader.switchAccount(target.loginid);
+          } catch {
+            // ignore — first authorize may already be on the right account
+          }
         }
+        trader.onAccount((a) => {
+          setActive(a);
+          if (typeof a.balance === "number") setBalance(a.balance);
+          setSettings((prev) =>
+            a.currency && prev.currency !== a.currency ? { ...prev, currency: a.currency } : prev,
+          );
+        });
+        trader.onBalance((b) => setBalance(b));
+        await trader.subscribeBalance();
+        localStorage.setItem(TOKEN_KEY, t);
+        setTokenState(t);
+        setStatus("connected");
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        setError(msg);
+        setStatus("error");
       }
-      trader.onAccount((a) => {
-        setActive(a);
-        if (typeof a.balance === "number") setBalance(a.balance);
-        setSettings((prev) => (a.currency && prev.currency !== a.currency ? { ...prev, currency: a.currency } : prev));
-      });
-      trader.onBalance((b) => setBalance(b));
-      await trader.subscribeBalance();
-      localStorage.setItem(TOKEN_KEY, t);
-      setTokenState(t);
-      setStatus("connected");
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setError(msg);
-      setStatus("error");
-    }
-  }, [settings.preferDemo]);
+    },
+    [settings.preferDemo],
+  );
 
   const disconnect = useCallback(() => {
     traderRef.current?.close();

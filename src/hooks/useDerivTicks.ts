@@ -21,7 +21,8 @@ export function useDerivTicks(symbol: string) {
       },
       onTick: (tick) => {
         setTicks((prev) => {
-          const next = prev.length >= MAX_BUFFER ? prev.slice(prev.length - MAX_BUFFER + 1) : prev.slice();
+          const next =
+            prev.length >= MAX_BUFFER ? prev.slice(prev.length - MAX_BUFFER + 1) : prev.slice();
           next.push(tick);
           return next;
         });

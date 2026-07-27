@@ -35,7 +35,12 @@ export function MatchesDiffersPanel({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Stat label={`Matches (${digit})`} value={r.matches} pct={r.matchPct} color="bg-emerald-500" />
+        <Stat
+          label={`Matches (${digit})`}
+          value={r.matches}
+          pct={r.matchPct}
+          color="bg-emerald-500"
+        />
         <Stat label="Differs" value={r.differs} pct={r.differPct} color="bg-indigo-500" />
       </div>
 
@@ -49,7 +54,17 @@ export function MatchesDiffersPanel({
   );
 }
 
-function Stat({ label, value, pct, color }: { label: string; value: number; pct: number; color: string }) {
+function Stat({
+  label,
+  value,
+  pct,
+  color,
+}: {
+  label: string;
+  value: number;
+  pct: number;
+  color: string;
+}) {
   return (
     <div className="rounded-md border bg-card p-3">
       <div className="flex items-baseline justify-between">

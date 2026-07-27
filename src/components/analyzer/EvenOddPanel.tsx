@@ -25,7 +25,17 @@ export function EvenOddPanel({ r }: { r: EvenOddResult }) {
   );
 }
 
-function Stat({ label, value, pct, color }: { label: string; value: number; pct: number; color: string }) {
+function Stat({
+  label,
+  value,
+  pct,
+  color,
+}: {
+  label: string;
+  value: number;
+  pct: number;
+  color: string;
+}) {
   return (
     <div className="rounded-md border bg-card p-3">
       <div className="flex items-baseline justify-between">

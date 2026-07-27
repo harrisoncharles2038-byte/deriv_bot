@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Deriv trading client. Holds a single WebSocket authorized with the user's
 // API token (Read + Trade scope). All requests are tagged with `req_id` so we
 // can resolve their responses individually. Token never leaves the browser
@@ -114,26 +115,23 @@ export class DerivTrader {
   }
 
   private send<T = any>(payload: Record<string, unknown>): Promise<T> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        await this.ensureOpen();
-      } catch (e) {
-        return reject(e as Error);
-      }
-      const req_id = this.nextReqId++;
-      this.pending.set(req_id, { resolve: resolve as (v: unknown) => void, reject });
-      const timer = setTimeout(() => {
-        if (this.pending.has(req_id)) {
-          this.pending.delete(req_id);
-          reject(new Error("request timeout"));
-        }
-      }, 20000);
-      const wrap = (v: unknown) => {
-        clearTimeout(timer);
-        resolve(v as T);
-      };
-      this.pending.set(req_id, { resolve: wrap as (v: unknown) => void, reject });
-      this.ws!.send(JSON.stringify({ ...payload, req_id }));
+    return this.ensureOpen().then(() => {
+      return new Promise<T>((resolve, reject) => {
+        const req_id = this.nextReqId++;
+        this.pending.set(req_id, { resolve: resolve as (v: unknown) => void, reject });
+        const timer = setTimeout(() => {
+          if (this.pending.has(req_id)) {
+            this.pending.delete(req_id);
+            reject(new Error("request timeout"));
+          }
+        }, 20000);
+        const wrap = (v: unknown) => {
+          clearTimeout(timer);
+          resolve(v as T);
+        };
+        this.pending.set(req_id, { resolve: wrap as (v: unknown) => void, reject });
+        this.ws!.send(JSON.stringify({ ...payload, req_id }));
+      });
     });
   }
 
@@ -221,13 +219,22 @@ export class DerivTrader {
     };
     this.contractListeners.add(handler);
     void this.ensureOpen().then(() => {
-      this.ws?.send(JSON.stringify({ proposal_open_contract: 1, contract_id: contractId, subscribe: 1, req_id }));
+      this.ws?.send(
+        JSON.stringify({
+          proposal_open_contract: 1,
+          contract_id: contractId,
+          subscribe: 1,
+          req_id,
+        }),
+      );
     });
     return () => {
       this.contractListeners.delete(handler);
       try {
         this.ws?.send(JSON.stringify({ forget: req_id }));
-      } catch { /* noop */ }
+      } catch {
+        /* noop */
+      }
     };
   }
 
@@ -244,15 +251,25 @@ export class DerivTrader {
 }
 
 /** Maps app contract names to Deriv API contract_type codes. */
-export function contractTypeFor(kind: "MATCHES" | "DIFFERS" | "EVEN" | "ODD" | "OVER" | "UNDER" | "RISE" | "FALL"): string {
+export function contractTypeFor(
+  kind: "MATCHES" | "DIFFERS" | "EVEN" | "ODD" | "OVER" | "UNDER" | "RISE" | "FALL",
+): string {
   switch (kind) {
-    case "MATCHES": return "DIGITMATCH";
-    case "DIFFERS": return "DIGITDIFF";
-    case "EVEN": return "DIGITEVEN";
-    case "ODD": return "DIGITODD";
-    case "OVER": return "DIGITOVER";
-    case "UNDER": return "DIGITUNDER";
-    case "RISE": return "CALL";
-    case "FALL": return "PUT";
+    case "MATCHES":
+      return "DIGITMATCH";
+    case "DIFFERS":
+      return "DIGITDIFF";
+    case "EVEN":
+      return "DIGITEVEN";
+    case "ODD":
+      return "DIGITODD";
+    case "OVER":
+      return "DIGITOVER";
+    case "UNDER":
+      return "DIGITUNDER";
+    case "RISE":
+      return "CALL";
+    case "FALL":
+      return "PUT";
   }
 }

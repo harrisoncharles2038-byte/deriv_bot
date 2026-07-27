@@ -67,7 +67,12 @@ export function InsightsPanel({ layer, evenOdd, matches, targetDigit, onSelectDi
             High-confidence digits ( &gt; 70% )
           </div>
           <div className="flex items-center gap-2">
-            <span className={cn("text-[10px] uppercase tracking-wide", highConfidenceMode === "matches" && "text-foreground")}>
+            <span
+              className={cn(
+                "text-[10px] uppercase tracking-wide",
+                highConfidenceMode === "matches" && "text-foreground",
+              )}
+            >
               Matches
             </span>
             <Switch
@@ -76,14 +81,21 @@ export function InsightsPanel({ layer, evenOdd, matches, targetDigit, onSelectDi
               onCheckedChange={(checked) => setHighConfidenceMode(checked ? "differs" : "matches")}
               aria-label="Toggle between Matches and Differs high-confidence digits"
             />
-            <span className={cn("text-[10px] uppercase tracking-wide", highConfidenceMode === "differs" && "text-foreground")}>
+            <span
+              className={cn(
+                "text-[10px] uppercase tracking-wide",
+                highConfidenceMode === "differs" && "text-foreground",
+              )}
+            >
               Differs
             </span>
           </div>
         </div>
         {highConfidence.length === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">
-            No digit currently exceeds a 70% {highConfidenceMode === "matches" ? "MATCHES" : "DIFFERS"} probability in the selected window. Try a larger window or wait for a stronger skew to appear.
+            No digit currently exceeds a 70%{" "}
+            {highConfidenceMode === "matches" ? "MATCHES" : "DIFFERS"} probability in the selected
+            window. Try a larger window or wait for a stronger skew to appear.
           </p>
         ) : (
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -155,7 +167,8 @@ export function InsightsPanel({ layer, evenOdd, matches, targetDigit, onSelectDi
                 onClick={onSelectDigit ? () => onSelectDigit(r.digit) : undefined}
                 className={cn(
                   "rounded border p-1 text-center font-mono text-[11px] tabular-nums transition-colors",
-                  isHi && "border-emerald-500/50 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+                  isHi &&
+                    "border-emerald-500/50 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
                   isLo && "border-rose-500/50 bg-rose-500/15 text-rose-700 dark:text-rose-300",
                   !isHi && !isLo && "bg-muted/30",
                   targetDigit === r.digit && "ring-1 ring-primary",
@@ -163,7 +176,9 @@ export function InsightsPanel({ layer, evenOdd, matches, targetDigit, onSelectDi
                 title={`Digit ${r.digit}: ${(r.combined * 100).toFixed(1)}%`}
               >
                 <div className="text-sm font-semibold">{r.digit}</div>
-                <div className="text-[10px] text-muted-foreground">{(r.combined * 100).toFixed(0)}%</div>
+                <div className="text-[10px] text-muted-foreground">
+                  {(r.combined * 100).toFixed(0)}%
+                </div>
               </button>
             );
           })}
@@ -176,7 +191,10 @@ export function InsightsPanel({ layer, evenOdd, matches, targetDigit, onSelectDi
         baseline={0.5}
         narrative={evenOddNarrative(evenOdd, eo)}
         extra={
-          <Row label="Observed" value={`${evenOdd.evenPct.toFixed(1)}% E / ${evenOdd.oddPct.toFixed(1)}% O`} />
+          <Row
+            label="Observed"
+            value={`${evenOdd.evenPct.toFixed(1)}% E / ${evenOdd.oddPct.toFixed(1)}% O`}
+          />
         }
       />
       <InsightCard
@@ -187,8 +205,14 @@ export function InsightsPanel({ layer, evenOdd, matches, targetDigit, onSelectDi
         extra={
           <>
             <Row label="Observed match rate" value={`${matches.matchPct.toFixed(1)}%`} />
-            <Row label="Hottest digit" value={`${matches.hottest.digit} (${matches.hottest.count})`} />
-            <Row label="Coldest digit" value={`${matches.coldest.digit} (${matches.coldest.count})`} />
+            <Row
+              label="Hottest digit"
+              value={`${matches.hottest.digit} (${matches.hottest.count})`}
+            />
+            <Row
+              label="Coldest digit"
+              value={`${matches.coldest.digit} (${matches.coldest.count})`}
+            />
           </>
         }
       />
@@ -283,7 +307,9 @@ function InsightCard({
       <div className="mt-3">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>Combined probability (baseline {pct(baseline)})</span>
-          <span className="font-mono tabular-nums text-foreground">{pct(prediction.combinedProb)}</span>
+          <span className="font-mono tabular-nums text-foreground">
+            {pct(prediction.combinedProb)}
+          </span>
         </div>
         <Progress value={prediction.combinedProb * 100} className="mt-1 h-2" />
         <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground tabular-nums">
@@ -325,7 +351,8 @@ function Mini({ label, value }: { label: string; value: string }) {
 
 function evenOddNarrative(r: EvenOddResult, p: Prediction) {
   const edgePct = p.edge * 100;
-  const tone: "strong" | "moderate" | "weak" = edgePct >= 8 ? "strong" : edgePct >= 3 ? "moderate" : "weak";
+  const tone: "strong" | "moderate" | "weak" =
+    edgePct >= 8 ? "strong" : edgePct >= 3 ? "moderate" : "weak";
   const streakNote =
     r.streak.length >= 4
       ? ` Current run: ${r.streak.length} consecutive ${r.streak.kind.toUpperCase()} — streaks can extend or break.`
@@ -343,7 +370,8 @@ function evenOddNarrative(r: EvenOddResult, p: Prediction) {
 
 function matchesNarrative(r: MatchesDiffersResult, p: Prediction, target: number) {
   const edgePct = p.edge * 100;
-  const tone: "strong" | "moderate" | "weak" = edgePct >= 5 ? "strong" : edgePct >= 2 ? "moderate" : "weak";
+  const tone: "strong" | "moderate" | "weak" =
+    edgePct >= 5 ? "strong" : edgePct >= 2 ? "moderate" : "weak";
   const hotCold =
     r.hottest.digit === target
       ? ` Digit ${target} is the hottest in the window.`

@@ -32,13 +32,20 @@ export function OverUnderPanel({
             ))}
           </SelectContent>
         </Select>
-        <span className="text-xs text-muted-foreground">Over = digit &gt; {barrier}; Under = digit &lt; {barrier}</span>
+        <span className="text-xs text-muted-foreground">
+          Over = digit &gt; {barrier}; Under = digit &lt; {barrier}
+        </span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label={`Over ${barrier}`} value={r.over} pct={r.overPct} color="bg-emerald-500" />
         <Stat label={`Under ${barrier}`} value={r.under} pct={r.underPct} color="bg-rose-500" />
-        <Stat label={`Equal ${barrier}`} value={r.equal} pct={r.total ? (r.equal / r.total) * 100 : 0} color="bg-slate-400" />
+        <Stat
+          label={`Equal ${barrier}`}
+          value={r.equal}
+          pct={r.total ? (r.equal / r.total) * 100 : 0}
+          color="bg-slate-400"
+        />
       </div>
 
       <div className="rounded-md border bg-card p-3 text-sm">
@@ -49,7 +56,17 @@ export function OverUnderPanel({
   );
 }
 
-function Stat({ label, value, pct, color }: { label: string; value: number; pct: number; color: string }) {
+function Stat({
+  label,
+  value,
+  pct,
+  color,
+}: {
+  label: string;
+  value: number;
+  pct: number;
+  color: string;
+}) {
   return (
     <div className="rounded-md border bg-card p-3">
       <div className="flex items-baseline justify-between">

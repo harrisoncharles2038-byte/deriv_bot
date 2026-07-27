@@ -24,11 +24,19 @@ export function SymbolScannerPanel({ targetDigit, barrier, currentSymbol, onSele
         <div>
           <div className="text-sm font-semibold">Volatility Index Scanner</div>
           <div className="text-xs text-muted-foreground">
-            Compares all 10 volatility indices (250 ticks each) and ranks them by maximum prediction edge.
+            Compares all 10 volatility indices (250 ticks each) and ranks them by maximum prediction
+            edge.
           </div>
         </div>
-        <Button size="sm" variant="outline" onClick={() => void scan()} disabled={status === "scanning"}>
-          <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", status === "scanning" && "animate-spin")} />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => void scan()}
+          disabled={status === "scanning"}
+        >
+          <RefreshCw
+            className={cn("mr-1.5 h-3.5 w-3.5", status === "scanning" && "animate-spin")}
+          />
           {status === "scanning" ? "Scanning…" : "Rescan"}
         </Button>
       </div>
@@ -50,11 +58,17 @@ export function SymbolScannerPanel({ targetDigit, barrier, currentSymbol, onSele
           <div className="mt-1 flex flex-wrap items-baseline justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="text-lg font-bold">{top.name}</div>
-              <Badge variant="outline" className="border-0 bg-muted text-[10px] text-muted-foreground">
+              <Badge
+                variant="outline"
+                className="border-0 bg-muted text-[10px] text-muted-foreground"
+              >
                 {isOneSecondIndex(top.code) ? "1s" : "std"}
               </Badge>
             </div>
-            <Badge variant="outline" className="border-0 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+            <Badge
+              variant="outline"
+              className="border-0 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+            >
               edge {pct(top.bestEdge)}
             </Badge>
           </div>
@@ -99,15 +113,15 @@ export function SymbolScannerPanel({ targetDigit, barrier, currentSymbol, onSele
                 return (
                   <tr
                     key={r.code}
-                    className={cn(
-                      "border-t",
-                      r.code === currentSymbol && "bg-primary/5",
-                    )}
+                    className={cn("border-t", r.code === currentSymbol && "bg-primary/5")}
                   >
                     <td className="px-2 py-1.5">
                       <div className="flex items-center gap-1.5">
                         <span>{r.name}</span>
-                        <Badge variant="outline" className="border-0 bg-muted px-1.5 text-[10px] text-muted-foreground">
+                        <Badge
+                          variant="outline"
+                          className="border-0 bg-muted px-1.5 text-[10px] text-muted-foreground"
+                        >
                           {isOneSecondIndex(r.code) ? "1s" : "std"}
                         </Badge>
                       </div>
@@ -116,8 +130,15 @@ export function SymbolScannerPanel({ targetDigit, barrier, currentSymbol, onSele
                       <span className="font-medium">{r.bestContract}</span>{" "}
                       <span className="text-muted-foreground">{r.bestDirection}</span>
                     </td>
-                    <td className="px-2 py-1.5 text-right font-mono tabular-nums">{pct(r.bestProb)}</td>
-                    <td className={cn("px-2 py-1.5 text-right font-mono tabular-nums font-semibold", tone)}>
+                    <td className="px-2 py-1.5 text-right font-mono tabular-nums">
+                      {pct(r.bestProb)}
+                    </td>
+                    <td
+                      className={cn(
+                        "px-2 py-1.5 text-right font-mono tabular-nums font-semibold",
+                        tone,
+                      )}
+                    >
                       {pct(r.bestEdge)}
                     </td>
                     <td className="px-2 py-1.5 text-right font-mono tabular-nums text-muted-foreground">
@@ -145,7 +166,8 @@ export function SymbolScannerPanel({ targetDigit, barrier, currentSymbol, onSele
 
       {scannedAt && status === "done" && (
         <div className="text-[11px] text-muted-foreground">
-          Last scan {new Date(scannedAt).toLocaleTimeString()}. Edges are snapshots — markets change tick to tick.
+          Last scan {new Date(scannedAt).toLocaleTimeString()}. Edges are snapshots — markets change
+          tick to tick.
         </div>
       )}
     </div>

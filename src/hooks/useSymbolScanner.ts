@@ -92,7 +92,13 @@ function fetchHistory(symbol: string, count = 250): Promise<Tick[]> {
   });
 }
 
-function scanTicks(code: string, name: string, ticks: Tick[], targetDigit: number, barrier: number): SymbolScan {
+function scanTicks(
+  code: string,
+  name: string,
+  ticks: Tick[],
+  targetDigit: number,
+  barrier: number,
+): SymbolScan {
   const layer = buildPredictionLayer({ ticks, targetDigit, barrier });
   const edges = layer.predictions.map((p) => ({
     contract: p.contract,

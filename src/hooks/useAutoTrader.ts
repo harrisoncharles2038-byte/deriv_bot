@@ -3,18 +3,26 @@ import { toast } from "sonner";
 import { useDerivTicks } from "@/hooks/useDerivTicks";
 import type { useDerivAccount } from "@/hooks/useDerivAccount";
 import { contractTypeFor } from "@/lib/deriv/trading";
+import { globalTradeStore } from "@/lib/deriv/tradeStore";
+import {
+  evenOdd,
+  riseFall,
+  matchesDiffers,
+  overUnder,
+  takeWindow,
+} from "@/lib/deriv/analysis";
 
 export interface AutoTraderConfig {
   enabled: boolean;
   symbol: string;
-  kind: "MATCHES" | "DIFFERS";
-  digit: number;
+  kind: "MATCHES" | "DIFFERS" | "EVEN" | "ODD" | "OVER" | "UNDER" | "RISE" | "FALL";
+  digit?: number;
   stake: number;
-  threshold: number;   // 0..1, freq of digit over window
-  window: number;      // ticks
-  recoverAfter: 2 | 3; // martingale trigger
-  takeProfit: number;  // absolute currency
-  stopLoss: number;    // absolute currency (positive number)
+  threshold: number; // 0..1
+  window: number; // ticks
+  recoverAfter: 2 | 3 | 4 | 5; // martingale trigger
+  takeProfit: number; // absolute currency
+  stopLoss: number; // absolute currency (positive number)
 }
 
 export function useAutoTrader(cfg: AutoTraderConfig, account: ReturnType<typeof useDerivAccount>) {
@@ -37,34 +45,68 @@ export function useAutoTrader(cfg: AutoTraderConfig, account: ReturnType<typeof 
       stoppedRef.current = false;
       pnlRef.current = 0;
       streakRef.current = 0;
-      setPnl(0); setWins(0); setLosses(0); setLossStreak(0);
-      setLastMsg("Auto-trader armed. Watching ticks…");
+      setPnl(0);
+      setWins(0);
+      setLosses(0);
+      setLossStreak(0);
+      setLastMsg(`Auto-trader armed for ${cfg.kind}. Watching ticks…`);
     } else {
       setLastMsg("");
     }
   }, [cfg.enabled, cfg.symbol, cfg.kind, cfg.digit]);
 
-  const freq = useMemo(() => {
+  const signalProb = useMemo(() => {
     if (ticks.length < cfg.window) return null;
-    const slice = ticks.slice(-cfg.window);
-    const hits = slice.filter((t) => t.lastDigit === cfg.digit).length;
-    return hits / slice.length;
-  }, [ticks, cfg.window, cfg.digit]);
+    const slice = takeWindow(ticks, cfg.window);
+    
+    switch (cfg.kind) {
+      case "MATCHES":
+        return matchesDiffers(slice, cfg.digit ?? 0).matchesProb;
+      case "DIFFERS":
+        return matchesDiffers(slice, cfg.digit ?? 0).differsProb;
+      case "EVEN":
+        return evenOdd(slice).evenProb;
+      case "ODD":
+        return evenOdd(slice).oddProb;
+      case "OVER":
+        return overUnder(slice, cfg.digit ?? 5).overProb;
+      case "UNDER":
+        return overUnder(slice, cfg.digit ?? 5).underProb;
+      case "RISE":
+        return riseFall(slice).riseProb;
+      case "FALL":
+        return riseFall(slice).fallProb;
+      default:
+        return 0;
+    }
+  }, [ticks, cfg.window, cfg.kind, cfg.digit]);
+
+  // Expose the raw frequency so `TradePickPanel` doesn't break, which assumes freq is just Matches/Differs freq.
+  // TradePickPanel actually checks `auto.freq`. It assumes freq is matches for MATCHES, so returning matchesProb is perfect.
+  const freq = signalProb;
 
   useEffect(() => {
     if (!cfg.enabled || stoppedRef.current) return;
-    if (freq == null) return;
+    if (signalProb == null) return;
     if (inTradeRef.current) return;
     if (account.status !== "connected" || !account.trader.current || !account.active) return;
 
-    const gate = cfg.kind === "MATCHES" ? freq >= cfg.threshold : freq <= (1 - cfg.threshold);
+    // We check if the probability of the TARGET outcome is >= the threshold.
+    // E.g. If threshold is 15%, and kind is MATCHES, we buy when matchesProb >= 0.15.
+    // Wait, earlier TradePickPanel passed threshold for Differs differently. Let's adapt:
+    // If it's Differs, TradePickPanel sends threshold as 85%.
+    // So we just check if signalProb >= cfg.threshold
+    const gate = signalProb >= cfg.threshold;
     if (!gate) return;
 
     const trader = account.trader.current;
     const acc = account.active;
-    const currentStake = cfg.stake * Math.pow(2, streakRef.current >= cfg.recoverAfter ? streakRef.current : 0);
+    const currentStake =
+      cfg.stake * Math.pow(2, streakRef.current >= cfg.recoverAfter ? streakRef.current : 0);
     inTradeRef.current = true;
-    setLastMsg(`Signal: freq ${(freq * 100).toFixed(1)}% → buying ${cfg.kind} ${cfg.digit} @ ${currentStake.toFixed(2)}`);
+    setLastMsg(
+      `Signal: prob ${(signalProb * 100).toFixed(1)}% → buying ${cfg.kind} @ ${currentStake.toFixed(2)}`,
+    );
 
     (async () => {
       let unsub: (() => void) | null = null;
@@ -76,18 +118,44 @@ export function useAutoTrader(cfg: AutoTraderConfig, account: ReturnType<typeof 
           currency: acc.currency,
           duration: account.settings.duration,
           duration_unit: account.settings.durationUnit,
-          barrier: String(cfg.digit),
+          barrier: cfg.digit !== undefined ? String(cfg.digit) : undefined,
         });
         const buy = await trader.buy(p.id, p.ask_price);
         setLastMsg(`Bought #${buy.contract_id}, waiting for settlement…`);
+        
+        // Push to global store
+        globalTradeStore.addTrade({
+          contract_id: buy.contract_id,
+          symbol: cfg.symbol,
+          kind: cfg.kind,
+          stake: currentStake,
+          payout: 0, // updated on close
+          profit: 0,
+          status: "open",
+        });
+
         unsub = trader.subscribeContract(buy.contract_id, (c) => {
           if (c.is_sold === 1 || c.status === "sold" || c.status === "won" || c.status === "lost") {
             const profit = Number(c.profit ?? (c.sell_price ?? 0) - buy.buy_price);
+            
+            globalTradeStore.updateTrade(buy.contract_id, {
+              status: profit > 0 ? "won" : "lost",
+              profit,
+              payout: c.sell_price ?? 0,
+            });
+
             pnlRef.current += profit;
             setPnl(pnlRef.current);
             const won = profit > 0;
-            if (won) { setWins((w) => w + 1); streakRef.current = 0; setLossStreak(0); }
-            else { setLosses((l) => l + 1); streakRef.current += 1; setLossStreak(streakRef.current); }
+            if (won) {
+              setWins((w) => w + 1);
+              streakRef.current = 0;
+              setLossStreak(0);
+            } else {
+              setLosses((l) => l + 1);
+              streakRef.current += 1;
+              setLossStreak(streakRef.current);
+            }
             const tp = cfgRef.current.takeProfit;
             const sl = cfgRef.current.stopLoss;
             if (tp > 0 && pnlRef.current >= tp) {
@@ -99,7 +167,9 @@ export function useAutoTrader(cfg: AutoTraderConfig, account: ReturnType<typeof 
               toast.error(`Stop-loss hit: ${pnlRef.current.toFixed(2)} ${acc.currency}`);
               setLastMsg(`Stopped: SL reached (${pnlRef.current.toFixed(2)})`);
             } else {
-              setLastMsg(`${won ? "WIN" : "LOSS"} ${profit.toFixed(2)} · P&L ${pnlRef.current.toFixed(2)}`);
+              setLastMsg(
+                `${won ? "WIN" : "LOSS"} ${profit.toFixed(2)} · P&L ${pnlRef.current.toFixed(2)}`,
+              );
             }
             unsub?.();
             inTradeRef.current = false;
@@ -112,7 +182,17 @@ export function useAutoTrader(cfg: AutoTraderConfig, account: ReturnType<typeof 
         toast.error("Auto-trade order failed", { description: msg });
       }
     })();
-  }, [freq, cfg.enabled, cfg.kind, cfg.digit, cfg.symbol, cfg.stake, cfg.threshold, cfg.recoverAfter, account]);
+  }, [
+    signalProb,
+    cfg.enabled,
+    cfg.kind,
+    cfg.digit,
+    cfg.symbol,
+    cfg.stake,
+    cfg.threshold,
+    cfg.recoverAfter,
+    account,
+  ]);
 
   return { pnl, wins, losses, lossStreak, lastMsg, freq, stopped: stoppedRef.current };
 }

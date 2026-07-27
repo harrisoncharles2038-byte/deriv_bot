@@ -1,4 +1,3 @@
-
 ## Goal
 
 Build a single-page web app that connects to Deriv's public WebSocket, streams ticks for a chosen synthetic index, and renders real-time statistical analysis plus signals for Even/Odd, Rise/Fall, Matches/Differs, and Over/Under. Analysis-only — no order placement. Clear "probabilistic, not financial advice" disclaimer throughout.
@@ -6,6 +5,7 @@ Build a single-page web app that connects to Deriv's public WebSocket, streams t
 ## Scope (core analyzer)
 
 In:
+
 - Live tick stream via Deriv WS (`wss://ws.derivws.com/websockets/v3?app_id=1089`, public — no token required for ticks)
 - Symbol picker: R_10, R_25, R_50, R_75, R_100, 1HZ10V, 1HZ25V, 1HZ50V, 1HZ75V, 1HZ100V
 - Tick buffer with windows: 10 / 25 / 50 / 100 / 500
@@ -18,6 +18,7 @@ In:
 - Optional Deriv API token input (stored client-side only for now, no trading wired up yet — placeholder for later)
 
 Out (deferred to follow-ups, called out in UI as "coming soon"):
+
 - Markov / Bayesian / Monte Carlo / entropy / ML prediction layer
 - Risk management module (stake sizing, drawdown)
 - AI natural-language commentary

@@ -6,18 +6,18 @@
 // Users import the file into https://bot.deriv.com and press Run.
 
 export interface DBotStrategyOptions {
-  symbol: string;                 // e.g. R_100 or 1HZ100V
+  symbol: string; // e.g. R_100 or 1HZ100V
   contract: "DIGITMATCH" | "DIGITDIFF";
-  digit: number;                  // 0..9
-  stake: number;                  // initial stake in account currency
-  duration?: number;              // ticks (default 1)
-  currency?: string;              // default USD
-  recoverAfter: 2 | 3;            // consecutive losses before doubling
-  multiplier?: number;            // stake multiplier per loss (default 2)
-  threshold?: number;             // 0..1 required probability, default 0.15
-  window?: number;                // rolling tick window, default 50
-  takeProfit?: number;            // stop when total profit ≥ this
-  stopLoss?: number;              // stop when total loss ≥ this (positive number)
+  digit: number; // 0..9
+  stake: number; // initial stake in account currency
+  duration?: number; // ticks (default 1)
+  currency?: string; // default USD
+  recoverAfter: 2 | 3; // consecutive losses before doubling
+  multiplier?: number; // stake multiplier per loss (default 2)
+  threshold?: number; // 0..1 required probability, default 0.15
+  window?: number; // rolling tick window, default 50
+  takeProfit?: number; // stop when total profit ≥ this
+  stopLoss?: number; // stop when total loss ≥ this (positive number)
 }
 
 function escapeXml(s: string): string {

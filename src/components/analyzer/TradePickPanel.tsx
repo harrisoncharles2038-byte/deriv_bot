@@ -69,8 +69,15 @@ export function TradePickPanel({ currentSymbol, currentDigit, onApply, account }
             Matches / Differs · across all symbols
           </Badge>
         </div>
-        <Button size="sm" variant="ghost" onClick={() => void scan()} disabled={status === "scanning"}>
-          <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", status === "scanning" && "animate-spin")} />
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => void scan()}
+          disabled={status === "scanning"}
+        >
+          <RefreshCw
+            className={cn("mr-1.5 h-3.5 w-3.5", status === "scanning" && "animate-spin")}
+          />
           Rescan
         </Button>
       </div>
@@ -99,7 +106,6 @@ export function TradePickPanel({ currentSymbol, currentDigit, onApply, account }
           account={account}
         />
       </div>
-
     </div>
   );
 }
@@ -154,6 +160,7 @@ function PickCard({
       takeProfit: Math.max(0, takeProfit),
       stopLoss: Math.max(0, stopLoss),
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     account ?? ({} as any),
   );
 
@@ -193,7 +200,9 @@ function PickCard({
     window.open(tradeUrl, "_blank", "noopener,noreferrer");
   }
 
-  useEffect(() => { setPickDigit(digit); }, [digit]);
+  useEffect(() => {
+    setPickDigit(digit);
+  }, [digit]);
   useEffect(() => {
     if (account?.settings.stake != null) setStake(account.settings.stake);
   }, [account?.settings.stake]);
@@ -282,28 +291,26 @@ function PickCard({
       </div>
 
       <div className="space-y-2 rounded-md border bg-background/60 p-2">
-        <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
-          Your trade
-        </div>
+        <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Your trade</div>
         <div>
-            <div className="mb-1 text-[10px] text-muted-foreground">Prediction digit (0–9)</div>
-            <div className="grid grid-cols-10 gap-1">
-              {Array.from({ length: 10 }, (_, d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => setPickDigit(d)}
-                  className={cn(
-                    "h-8 rounded font-mono text-sm tabular-nums transition-colors",
-                    pickDigit === d
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted hover:bg-muted/70",
-                  )}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
+          <div className="mb-1 text-[10px] text-muted-foreground">Prediction digit (0–9)</div>
+          <div className="grid grid-cols-10 gap-1">
+            {Array.from({ length: 10 }, (_, d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => setPickDigit(d)}
+                className={cn(
+                  "h-8 rounded font-mono text-sm tabular-nums transition-colors",
+                  pickDigit === d
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted hover:bg-muted/70",
+                )}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <label className="text-[10px] uppercase tracking-wide text-muted-foreground">
@@ -343,7 +350,9 @@ function PickCard({
             min={1}
             max={99}
             step={1}
-            value={Number.isFinite(threshold) ? (kind === "MATCHES" ? threshold : 100 - threshold) : ""}
+            value={
+              Number.isFinite(threshold) ? (kind === "MATCHES" ? threshold : 100 - threshold) : ""
+            }
             onChange={(e) => {
               const v = parseFloat(e.target.value);
               setThreshold(kind === "MATCHES" ? v : 100 - v);
@@ -396,18 +405,19 @@ function PickCard({
         {canTrade ? (
           <Button size="sm" className="flex-1" onClick={placeOrder} disabled={busy}>
             {busy ? (
-              <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Placing…</>
+              <>
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                Placing…
+              </>
             ) : (
-              <><Zap className="mr-1.5 h-3.5 w-3.5" />Buy {kind}</>
+              <>
+                <Zap className="mr-1.5 h-3.5 w-3.5" />
+                Buy {kind}
+              </>
             )}
           </Button>
         ) : (
-          <Button
-            size="sm"
-            className="flex-1"
-            variant="secondary"
-            onClick={exportAndOpenBot}
-          >
+          <Button size="sm" className="flex-1" variant="secondary" onClick={exportAndOpenBot}>
             Open {kind} in Deriv Bot
             <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
           </Button>
@@ -436,13 +446,21 @@ function PickCard({
               </div>
               <div className="flex justify-between font-mono tabular-nums">
                 <span className="text-muted-foreground">P&amp;L</span>
-                <span className={cn(auto.pnl > 0 && "text-emerald-600", auto.pnl < 0 && "text-rose-600")}>
-                  {auto.pnl >= 0 ? "+" : ""}{auto.pnl.toFixed(2)} {account?.active?.currency}
+                <span
+                  className={cn(
+                    auto.pnl > 0 && "text-emerald-600",
+                    auto.pnl < 0 && "text-rose-600",
+                  )}
+                >
+                  {auto.pnl >= 0 ? "+" : ""}
+                  {auto.pnl.toFixed(2)} {account?.active?.currency}
                 </span>
               </div>
               <div className="flex justify-between font-mono tabular-nums">
                 <span className="text-muted-foreground">W / L · streak</span>
-                <span>{auto.wins} / {auto.losses} · {auto.lossStreak}</span>
+                <span>
+                  {auto.wins} / {auto.losses} · {auto.lossStreak}
+                </span>
               </div>
               {auto.lastMsg && (
                 <div className="truncate text-[10px] text-muted-foreground">{auto.lastMsg}</div>
