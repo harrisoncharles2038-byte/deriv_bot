@@ -21,6 +21,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 interface AppSidebarProps {
@@ -29,6 +30,15 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ activeView, setActiveView }: AppSidebarProps) {
+  const { setOpenMobile, isMobile } = useSidebar();
+
+  const handleNavClick = (view: string) => {
+    setActiveView(view);
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   const tradingItems = [
     { title: "Auto-Bot", value: "auto-bot", icon: Bot, isPrimary: true },
     { title: "Live History", value: "history", icon: History, isPrimary: true },
@@ -68,7 +78,7 @@ export function AppSidebar({ activeView, setActiveView }: AppSidebarProps) {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     isActive={activeView === item.value}
-                    onClick={() => setActiveView(item.value)}
+                    onClick={() => handleNavClick(item.value)}
                     className={activeView === item.value ? "bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary" : ""}
                     tooltip={item.title}
                   >
@@ -91,7 +101,7 @@ export function AppSidebar({ activeView, setActiveView }: AppSidebarProps) {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     isActive={activeView === item.value}
-                    onClick={() => setActiveView(item.value)}
+                    onClick={() => handleNavClick(item.value)}
                     tooltip={item.title}
                   >
                     <item.icon className="h-4 w-4" />
@@ -113,7 +123,7 @@ export function AppSidebar({ activeView, setActiveView }: AppSidebarProps) {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     isActive={activeView === item.value}
-                    onClick={() => setActiveView(item.value)}
+                    onClick={() => handleNavClick(item.value)}
                     tooltip={item.title}
                   >
                     <item.icon className="h-4 w-4" />
@@ -132,7 +142,7 @@ export function AppSidebar({ activeView, setActiveView }: AppSidebarProps) {
           <SidebarMenuItem>
             <SidebarMenuButton 
               isActive={activeView === "settings"}
-              onClick={() => setActiveView("settings")}
+              onClick={() => handleNavClick("settings")}
               tooltip="Account Settings"
               className={activeView === "settings" ? "bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary" : ""}
             >
