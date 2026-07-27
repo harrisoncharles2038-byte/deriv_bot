@@ -65,7 +65,8 @@ A highly advanced, real-time trading terminal and analytics dashboard for **Deri
 This project is proudly built and maintained by:
 
 - **Harrison** ([harrisoncharles2038-byte](https://github.com/harrisoncharles2038-byte))
-- **Geoffrey Mokami**
+- **Geoffrey Mokami** ([GEOFFREY-MO](https://github.com/GEOFFREY-MO))
+  
 
 Thank you for your contributions to the codebase and strategy engine!
 
