@@ -67,7 +67,7 @@ export function AutoBotPanel() {
       
       <CardContent className="p-4 sm:p-6 grid gap-6 lg:grid-cols-2">
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Strategy Type</label>
               <Select value={kind} onValueChange={(v: any) => setKind(v)} disabled={active}>
@@ -101,7 +101,7 @@ export function AutoBotPanel() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Trigger Threshold (%)</label>
               <Input type="number" min={1} max={99} value={threshold} onChange={(e) => setThreshold(Number(e.target.value))} disabled={active} className="h-9 bg-background/50 font-mono" />
@@ -115,7 +115,7 @@ export function AutoBotPanel() {
           {requiresDigit && (
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Target Digit / Barrier (0-9)</label>
-              <div className="grid grid-cols-10 gap-1">
+              <div className="grid grid-cols-5 sm:grid-cols-10 gap-1">
                 {Array.from({ length: 10 }, (_, d) => (
                   <button
                     key={d}
@@ -134,7 +134,7 @@ export function AutoBotPanel() {
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-white/5 pt-4">
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Stake</label>
               <Input type="number" min={0.35} step={0.5} value={stake} onChange={(e) => setStake(Number(e.target.value))} disabled={active} className="h-9 bg-background/50 font-mono" />
@@ -149,7 +149,7 @@ export function AutoBotPanel() {
             </div>
           </div>
           
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
             <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Martingale Recovery (Double after)</label>
             <Select value={String(recoverAfter)} onValueChange={(v) => setRecoverAfter(Number(v) as any)} disabled={active}>
               <SelectTrigger className="h-8 w-32 bg-background/50">
@@ -165,7 +165,7 @@ export function AutoBotPanel() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 border-l border-white/5 pl-0 lg:pl-6">
+        <div className="flex flex-col gap-4 border-t lg:border-t-0 lg:border-l border-white/5 pt-6 lg:pt-0 lg:pl-6">
           <div className="flex-1 rounded-lg border border-white/5 bg-black/20 p-4 space-y-4">
             <div className="flex justify-between items-end">
               <div className="text-[11px] text-muted-foreground uppercase tracking-wide">Live P&L</div>

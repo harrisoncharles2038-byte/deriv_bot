@@ -243,7 +243,7 @@ export function DerivAccountPanel({ account }: { account: Account }) {
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-3">
               <Settings2 className="h-3.5 w-3.5" /> Global Trade Defaults
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-[10px] text-muted-foreground">Default Stake</Label>
                 <Input
@@ -268,7 +268,7 @@ export function DerivAccountPanel({ account }: { account: Account }) {
                   <span className="text-[10px] text-muted-foreground">{settings.confirmBeforeBuy ? "ON" : "OFF"}</span>
                 </div>
               </div>
-              <div className="space-y-1 col-span-2 flex gap-2">
+              <div className="space-y-1 sm:col-span-2 flex flex-col sm:flex-row gap-2">
                 <div className="flex-1">
                   <Label className="text-[10px] text-muted-foreground">Duration</Label>
                   <Input

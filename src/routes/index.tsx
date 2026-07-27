@@ -132,7 +132,7 @@ function Index() {
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] uppercase tracking-wide text-muted-foreground hidden lg:inline">Symbol</span>
                   <Select value={symbol} onValueChange={setSymbol}>
-                    <SelectTrigger className="h-8 w-[160px] bg-background/50 border-white/10">
+                    <SelectTrigger className="h-8 w-[130px] sm:w-[160px] bg-background/50 border-white/10 text-xs sm:text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -148,7 +148,7 @@ function Index() {
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] uppercase tracking-wide text-muted-foreground hidden lg:inline">Window</span>
                   <Select value={String(windowSize)} onValueChange={(v) => setWindowSize(Number(v))}>
-                    <SelectTrigger className="h-8 w-[100px] bg-background/50 border-white/10">
+                    <SelectTrigger className="h-8 w-[90px] sm:w-[100px] bg-background/50 border-white/10 text-xs sm:text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
