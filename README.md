@@ -60,7 +60,7 @@ A highly advanced, real-time trading terminal and analytics dashboard for **Deri
 - Your API tokens are stored strictly in your browser's `localStorage` and are never sent to any third-party servers.
 - **Disclaimer:** Trading involves significant risk. The analytical signals provided by this tool are statistical probabilities and should not be considered financial advice. Always test strategies thoroughly on a Virtual (Demo) account before using Real Money.
 
-## 🔑 Step-by-Step API Setup Guide
+## Step-by-Step API Setup Guide
 
 To connect the Deriv Pro Analyzer to your account, you need to generate a secure API token. Follow these exact steps:
 
@@ -71,9 +71,9 @@ To connect the Deriv Pro Analyzer to your account, you need to generate a secure
    - On the left sidebar, click on **Security & safety** > **API token**.
 3. **Select the Correct Scopes:**
    To ensure the Auto-Bot and Analyzer function correctly, you must select the following scopes:
-   - ✅ **Read** (Required to view balances, history, and live ticks)
-   - ✅ **Trade** (Required for the Auto-Bot to execute trades)
-   - ✅ **Admin** (Optional but recommended if you want to switch between Virtual and Real accounts from within the app)
+   - **Read** (Required to view balances, history, and live ticks)
+   - **Trade** (Required for the Auto-Bot to execute trades)
+   - **Admin** (Optional but recommended if you want to switch between Virtual and Real accounts from within the app)
 4. **Name and Generate:**
    - In the "Token name" field, type something memorable like `DerivProAnalyzer`.
    - Click **Create**.
