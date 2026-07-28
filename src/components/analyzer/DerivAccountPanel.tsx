@@ -200,16 +200,32 @@ export function DerivAccountPanel({ account }: { account: Account }) {
 
       <CardContent className="p-6 grid gap-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="rounded-xl border border-white/5 bg-black/20 p-4 space-y-1 relative overflow-hidden group">
-            <div className="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <Wallet className="w-16 h-16" />
-            </div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Balance</div>
-            <div className="flex items-end gap-2">
-              <div className={cn("text-3xl font-bold font-mono tracking-tight", isDemo ? "text-amber-400" : "text-emerald-400")}>
-                {balance != null ? balance.toFixed(2) : "—"}
+          <div className="rounded-xl border border-white/5 bg-black/20 p-4 space-y-2 relative overflow-hidden group flex flex-col justify-between">
+            <div>
+              <div className="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <Wallet className="w-16 h-16" />
               </div>
-              <div className="text-sm font-semibold text-muted-foreground mb-1">{active?.currency}</div>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Wallet Balance</div>
+              <div className="flex items-end gap-2 mt-1">
+                <div className={cn("text-3xl font-bold font-mono tracking-tight", isDemo ? "text-amber-400" : "text-emerald-400")}>
+                  {balance != null ? balance.toFixed(2) : "—"}
+                </div>
+                <div className="text-sm font-semibold text-muted-foreground mb-1">{active?.currency}</div>
+              </div>
+            </div>
+            <div className="pt-3 border-t border-white/5 mt-2 flex items-center justify-between">
+              <span className="text-[9px] text-emerald-500/70 uppercase tracking-widest flex items-center gap-1">
+                <Activity className="h-3 w-3" /> Live API Sync
+              </span>
+              <a
+                href={isDemo ? "https://app.deriv.com/" : "https://app.deriv.com/cashier/deposit"}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-[10px] uppercase font-bold text-primary hover:text-primary/80 transition-colors bg-primary/10 px-2 py-1 rounded"
+                title="Manage funds on Deriv"
+              >
+                Cashier <ExternalLink className="h-3 w-3" />
+              </a>
             </div>
           </div>
 
